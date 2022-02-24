@@ -18,7 +18,3 @@ This project contains a sample serverless.yml file and sets up dotenv and typesc
 - `yarn format`: To autoformat all the issues.
 - `yarn console tinker`: If you need a Node.js based Typescript REPL, run this to be able to quickly test scripts and small pieces of code.
 - `yarn upgrade --latest`: To upgrade all packages to their latest versions (could include breaking changes).
-
-## License
-
-MIT

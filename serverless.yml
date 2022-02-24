@@ -4,6 +4,14 @@ useDotenv: true
 custom:
   APP_ENV: ${opt:stage, "development"}
 
+  webpack:
+    webpackConfig: ./webpack.config.js
+    keepOutputDirectory: false
+    packager: 'yarn'
+    includeModules:
+      forceExclude:
+        - aws-sdk
+
 provider:
   name: aws
   runtime: nodejs14.x
@@ -22,13 +30,16 @@ provider:
     APP_ENV: ${self:custom.APP_ENV}
     APP_NAME: ${env:APP_NAME}
 
+package:
+  individually: true
+
 functions:
   helloWorld:
     timeout: 300
     handler: src/hello-world-serverless.handler
 
 plugins:
-  - serverless-plugin-typescript
+  - serverless-webpack
   - serverless-offline
   - serverless-offline-scheduler
 
