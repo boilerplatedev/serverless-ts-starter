@@ -1,0 +1,85 @@
+service: serverless-ts-starter
+useDotenv: true
+
+custom:
+  APP_ENV: ${opt:stage, "development"}
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  stage: ${self:custom.APP_ENV}
+  region: us-east-1
+
+  iam:
+    role: LambdaRole
+
+  apiGateway:
+    shouldStartNameWithService: true
+
+  environment:
+    AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1
+    NODE_ENV: production
+    APP_ENV: ${self:custom.APP_ENV}
+    APP_NAME: ${env:APP_NAME}
+
+functions:
+  helloWorld:
+    timeout: 300
+    handler: src/hello-world-serverless.handler
+
+plugins:
+  - serverless-plugin-typescript
+  - serverless-offline
+  - serverless-offline-scheduler
+
+resources:
+  Resources:
+    LambdaRole:
+      Type: AWS::IAM::Role
+      Properties:
+        AssumeRolePolicyDocument:
+          Statement:
+            - Effect: Allow
+              Action: sts:AssumeRole
+              Principal:
+                Service: lambda.amazonaws.com
+          Version: '2012-10-17'
+        Policies:
+          - PolicyName: CanInvoke # warmup plugin
+            PolicyDocument:
+              Version: '2012-10-17'
+              Statement:
+                - Effect: 'Allow'
+                  Action:
+                    - 'lambda:InvokeFunction'
+                  Resource: '*'
+          - PolicyName: CanLog # cloudwatch logging
+            PolicyDocument:
+              Version: '2012-10-17'
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - logs:CreateLogStream
+                    - logs:CreateLogGroup
+                    - logs:PutLogEvents
+                  Resource: arn:aws:logs:*:*:*
+          - PolicyName: CanManageConnections
+            PolicyDocument:
+              Version: '2012-10-17'
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - execute-api:Invoke
+                    - execute-api:ManageConnections
+                  Resource:
+                    - 'arn:aws:execute-api:*:*:*'
+          - PolicyName: CanUseNetwork # private cloud
+            PolicyDocument:
+              Version: '2012-10-17'
+              Statement:
+                - Effect: 'Allow'
+                  Action:
+                    - ec2:CreateNetworkInterface
+                    - ec2:DescribeNetworkInterfaces
+                    - ec2:DeleteNetworkInterface
+                  Resource: '*'
